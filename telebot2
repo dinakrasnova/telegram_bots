@@ -1,0 +1,27 @@
+import telebot
+from telebot import types
+
+
+bot = telebot.TeleBot(' ')
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    markup = types.ReplyKeyboardMarkup()
+    markup.add(types.KeyboardButton('Go to the site'))
+    bot.reply_to(message, 'S', reply_markup=markup)
+    bot.send_message(message.chat.id, 'Hello', reply_markup=markup)
+    bot.register_next_step_handler(message, on_click)
+
+def on_click(message):
+    if message.text == 'Go to the site':
+        bot.send_message(message.chat.id, 'Website is open')
+
+@bot.message_handler(content_types=['photo'])
+
+def get_photo(message):
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton('Go to the site', url='https://azbuha.ru'))
+    bot.reply_to(message, 'W', reply_markup=markup)
+
+
+bot.polling(none_stop=True)
