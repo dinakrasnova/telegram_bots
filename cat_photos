@@ -3,7 +3,7 @@ import time
 
 API_URL: str = 'https://api.telegram.org/bot'
 API_CATS_URL: str = 'https://aws.random.cat/meow'
-BOT_TOKEN: str = '6091192538:AAF5OPIf3Z0ixVGrVu6IExyFzFa7KpOVcD0'
+BOT_TOKEN: str = '     '
 ERROR_TEXT: str = 'Здесь должна была быть картинка с котиком :('
 
 offset: int = -2
