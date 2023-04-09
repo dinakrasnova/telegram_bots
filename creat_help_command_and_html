@@ -1,0 +1,25 @@
+from aiogram import Bot, Dispatcher, types, executor
+from config import API_TOKEN
+
+
+bot = Bot(API_TOKEN)
+dp = Dispatcher(bot)
+
+HELP_COMMAND = """
+<b>/help</b> - <em>показывает список команд</em>
+<b>/give</b> - <em>отправляет кота</em>
+<b>/start</b> - <em>запускает бота</em>
+
+"""
+
+
+@dp.message_handler(commands=['help'])
+async def help_command(message: types.Message):
+    await message.reply(text=HELP_COMMAND, parse_mode="HTML")
+
+
+
+
+
+if __name__ == '__main__':
+    executor.start_polling(dp)
