@@ -1,0 +1,24 @@
+from aiogram import Bot, Dispatcher, types, executor
+from config import API_TOKEN
+
+
+bot = Bot(API_TOKEN)
+dp = Dispatcher(bot)
+
+@dp.message_handler(commands=['give'])
+async def send_sticker(message: types.Message):
+    await message.answer("Смотри какой котик: ❤️ ")
+    await bot.send_sticker(message.from_user.id, sticker='CAACAgIAAxkBAAIBQWQyhGI1IZpSv2ujHztLqoVW7OmpAAJJAANZu_wl0SE8IplinAUvBA')
+
+@dp.message_handler()
+async def send_sticker(message: types.Message):
+    if message.text == "❤️ ":
+        await message.answer("😍 ")
+    else:
+        await bot.send_sticker(message.from_user.id,
+                               sticker='CAACAgIAAxkBAAIBQWQyhGI1IZpSv2ujHztLqoVW7OmpAAJJAANZu_wl0SE8IplinAUvBA')
+
+
+
+if __name__ == '__main__':
+    executor.start_polling(dp)
