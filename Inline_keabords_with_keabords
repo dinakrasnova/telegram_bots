@@ -1,0 +1,28 @@
+from aiogram import Bot, Dispatcher, types, executor
+from config import API_TOKEN
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton,InlineKeyboardMarkup, InlineKeyboardButton
+
+
+bot = Bot(API_TOKEN)
+dp = Dispatcher(bot)
+
+ikb = InlineKeyboardMarkup(row_width=2)
+ib1 = InlineKeyboardButton(text='YouTube', url='https://www.youtube.com/channel/UCCy0vl_VZ3fzdMJNLhm3okQ')
+ib2 = InlineKeyboardButton(text='Site', url='https://azbuha.ru/')
+ikb.add(ib1).add(ib2)
+
+kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+b = KeyboardButton(text='/links')
+kb.add(b)
+
+async def on_startup(_):
+    print('Я был запущен')
+
+@dp.message_handler(commands=['start'])
+async def start_command(message: types.Message):
+    await message.answer(text="Добро пожаловать в главное меню", reply_markup=kb)
+
+
+@dp.message_handler(commands=['links'])
+async def links_command(message: types.Message):
+    await message.answer(text="Выберите опцию:", reply_markup=ikb)
