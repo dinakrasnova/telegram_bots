@@ -1,0 +1,53 @@
+from aiogram import Bot, Dispatcher, types, executor
+from config import API_TOKEN
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+import random
+
+
+bot = Bot(API_TOKEN)
+dp = Dispatcher(bot)
+
+#Создаем функцию с кнопками увеличить, уменьшить и рандомное число
+
+def get_inline_keybord():
+   ikb = InlineKeyboardMarkup(inline_keyboard=[
+       (InlineKeyboardButton('Increase', callback_data='btn_increase'), InlineKeyboardButton('Decrease', callback_data='btn_decrease',),
+       InlineKeyboardButton('Random Value', callback_data='btn_random'))
+   ])
+   return ikb
+
+async def on_startup(_):
+    print('Я был запущен')
+
+number = 0
+
+@dp.message_handler(commands='start')
+async def cmd_start(message: types.Message):
+    await message.answer(f'The current number is {number}',
+                         reply_markup=get_inline_keybord())
+
+#Хендлер обрабатывает кнопки увеличения, уменьшения и рандомного числа
+
+@dp.callback_query_handler(lambda callback_query: callback_query.data.startswith('btn'))
+async def ikb_cb_handler(callback: types.CallbackQuery):
+    global number
+    if callback.data == 'btn_increase':
+        number +=1
+        await callback.message.edit_text(f'The current number is {number}',
+                                         reply_markup=get_inline_keybord())
+    elif callback.data == 'btn_decrease':
+        number -=1
+        await callback.message.edit_text(f'The current number is {number}',
+                                         reply_markup=get_inline_keybord())
+    elif callback.data == 'btn_random':
+        number = random.randint(1, 59)
+        await callback.message.edit_text(f'The current number is {number}',
+                                         reply_markup=get_inline_keybord())
+    else:
+        1/0
+
+
+if __name__ == '__main__':
+    executor.start_polling(dispatcher=dp,
+                           skip_updates=True,
+                           on_startup=on_startup)
