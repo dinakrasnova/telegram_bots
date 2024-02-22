@@ -1,0 +1,33 @@
+import logging
+from aiogram import Bot, Dispatcher, types
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.types import ParseMode
+from aiogram import executor
+
+# Здесь необходимо заменить 'your_api_token_here' на ваш API токен Telegram бота
+API_TOKEN = 'your_api_token_here'
+
+# Настройка логгирования для отслеживания событий бота
+logging.basicConfig(level=logging.INFO)
+
+# Инициализация объекта бота и диспетчера
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
+
+# Подключение Middleware для логгирования
+dp.middleware.setup(LoggingMiddleware())
+
+
+# Обработчик команд '/start' и '/help'
+@dp.message_handler(commands=['start', 'help'])
+async def send_welcome(message: types.Message):
+    """
+    Этот обработчик будет вызван, когда пользователь отправит команду '/start' или '/help'
+    """
+    # Отправка приветственного сообщения с именем пользователя
+    await message.reply(f"Привет, {message.from_user.first_name}!\nЯ бот и приветствую тебя!")
+
+
+# Запуск бота
+if __name__ == '__main__':
+    executor.start_polling(dp, skip_updates=True)
