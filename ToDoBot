@@ -1,0 +1,68 @@
+from aiogram import Bot, Dispatcher, types
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.types import ParseMode
+from random import choice
+import logging
+import asyncio
+
+API_TOKEN = 'your_api_token_here'
+
+logging.basicConfig(level=logging.INFO)
+
+loop = asyncio.get_event_loop()
+bot = Bot(token=API_TOKEN, loop=loop)
+dp = Dispatcher(bot)
+dp.middleware.setup(LoggingMiddleware())
+
+RANDOM_TASKS = ['Написать Гвидо письмо', 'Выучить Python', 'Записаться на курс в Нетологию', 'Посмотреть 4 сезон Рик и Морти']
+
+todos = dict()
+
+HELP = '''
+Список доступных команд:
+* print  - напечать все задачи на заданную дату
+* todo - добавить задачу
+* random - добавить на сегодня случайную задачу
+* help - Напечатать help
+'''
+
+def add_todo(date, task):
+    date = date.lower()
+    if todos.get(date) is not None:
+        todos[date].append(task)
+    else:
+        todos[date] = [task]
+
+@dp.message_handler(commands=['help'])
+async def help(message: types.Message):
+    await message.answer(HELP)
+
+@dp.message_handler(commands=['random'])
+async def random_task(message: types.Message):
+    task = choice(RANDOM_TASKS)
+    add_todo('сегодня', task)
+    await message.answer(f'Задача {task} добавлена на сегодня')
+
+@dp.message_handler(commands=['todo'])
+async def add_task(message: types.Message):
+    command, date, *task = message.text.split(maxsplit=2)
+    task = ' '.join(task)
+    add_todo(date, task)
+    await message.answer(f'Задача {task} добавлена на дату {date}')
+
+@dp.message_handler(commands=['print'])
+async def print_tasks(message: types.Message):
+    date = message.text.split()[1].lower()
+    tasks = todos.get(date, 'Такой даты нет')
+    if isinstance(tasks, list):
+        tasks = '\n'.join([f'[ ] {task}' for task in tasks])
+    await message.answer(tasks)
+
+if __name__ == '__main__':
+    try:
+        loop.run_until_complete(dp.start_polling())
+    except KeyboardInterrupt:
+        pass
+    finally:
+        loop.run_until_complete(dp.stop_polling())
+        loop.close()
