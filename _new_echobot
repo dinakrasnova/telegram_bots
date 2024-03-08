@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from aiogram import Bot
+from aiogram import Bot, F
 from aiogram import Dispatcher
 from aiogram import types
 from aiogram.filters import CommandStart, Command
@@ -22,6 +22,26 @@ async def handle_start(message: types.Message):
 async def handle_help(message: types.Message):
     text = "I'm and echo bot.\nSend me any message!"
     await message.answer(text=text)
+
+#Магический фильтр F, нужно импортировать. Код ниже
+
+#переменная, куда сохраняется если пользователь отправляет или фото или видео или документ
+
+any_media_filter = F.photo | F.video | F.document
+
+#если без описания
+
+@dp.message(any_media_filter, ~F.caption)
+# @dp.message(F.photo, F.video, ~F.caption)
+# @dp.message(F.photo | F.video | F.document, ~F.caption)
+async def handle_any_media_wo_caption(message: types.Message):
+    await message.reply("I can't see.")
+
+#если к фото и другим медиа из переменной выше прикрепляется описание
+
+@dp.message(any_media_filter, F.caption)
+async def handle_any_media_w_caption(message: types.Message):
+    await message.reply(f"Smth is on media. Your text: {message.caption!r}")
 
 
 @dp.message()
