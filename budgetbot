@@ -1,0 +1,93 @@
+import csv
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
+from aiogram.types import Message
+import asyncio
+
+# Токен вашего бота
+TOKEN = "ВАШ_ТОКЕН"  # Замените на токен, полученный от BotFather
+
+# Инициализация бота
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+
+# Функция для сохранения данных в CSV
+def save_to_csv(data):
+    with open("data.csv", mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(data)
+
+# Функция для чтения данных из CSV
+def read_from_csv(category=None):
+    try:
+        with open("data.csv", mode="r", encoding="utf-8") as file:
+            reader = csv.reader(file)
+            rows = list(reader)  # Все строки файла
+            if category:
+                # Фильтруем данные по категории
+                filtered_rows = [row for row in rows if len(row) > 3 and row[3] == category]
+                return filtered_rows
+            return rows
+    except FileNotFoundError:
+        return []  # Если файл не найден, возвращаем пустой список
+
+# Команда /start
+@dp.message(Command("start"))
+async def start_command(message: Message):
+    await message.reply(
+        "Привет! Отправь данные в формате: Доход/Расход, Сумма, Категория, Комментарий.\n"
+        "Для просмотра данных используй команду: /view категория."
+    )
+
+# Команда для просмотра данных
+@dp.message(Command("view"))
+async def view_data(message: Message):
+    try:
+        # Получаем категорию из сообщения
+        category = message.text.replace("/view", "").strip()
+        if not category:
+            await message.reply("Укажите категорию после команды, например: /view Продажи")
+            return
+
+        # Читаем данные из CSV
+        data = read_from_csv(category)
+
+        # Формируем ответ
+        if data:
+            response = f"Данные по категории '{category}':\n"
+            response += "\n".join([f"{row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}" for row in data])
+        else:
+            response = f"Нет данных по категории '{category}'."
+
+        await message.reply(response)
+    except Exception as e:
+        await message.reply(f"Ошибка при просмотре данных: {e}")
+
+# Обработчик сообщений
+@dp.message()
+async def handle_message(message: Message):
+    try:
+        # Разбиваем сообщение на части
+        parts = message.text.split(",")
+        if len(parts) < 3:
+            await message.reply("Формат неправильный. Введите: Доход/Расход, Сумма, Категория, Комментарий.")
+            return
+
+        transaction_type = parts[0].strip()
+        amount = parts[1].strip()
+        category = parts[2].strip()
+        comment = ", ".join(parts[3:]).strip() if len(parts) > 3 else ""
+        date = message.date.strftime("%Y-%m-%d")
+
+        # Сохраняем данные
+        save_to_csv([date, transaction_type, amount, category, comment])
+        await message.reply("Данные успешно сохранены!")
+    except Exception as e:
+        await message.reply(f"Произошла ошибка: {e}")
+
+# Запуск бота
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
